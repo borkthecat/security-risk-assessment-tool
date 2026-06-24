@@ -24,25 +24,27 @@
 
 const { contextBridge, ipcRenderer } = require('electron');
 
-// contextBridge.exposeInMainWorld('darkMode', {
-//   toggle: () => ipcRenderer.invoke('dark-mode:toggle'),
-//   system: () => ipcRenderer.invoke('dark-mode:system'),
-// });
+// Helper: register an ipcRenderer listener and explicitly return undefined so that
+// contextBridge does not attempt to serialize the IpcRenderer instance that
+// ipcRenderer.on() returns in Electron v28+. The IpcRendererEvent is also stripped
+// before forwarding arguments to the renderer callback because the event object
+// contains non-serializable Electron internals (e.g. WebContents) that contextBridge
+// cannot clone via the Structured Clone Algorithm.
+const onIpc = (channel, listener) => {
+  ipcRenderer.on(channel, (_event, ...args) => listener(...args));
+};
 
 contextBridge.exposeInMainWorld('project', {
-  load: (data, classification) => ipcRenderer.on('project:load', data, classification),
-  iteration: (iteration) => ipcRenderer.on('project:iteration', iteration),
-  // validationErrors: (state) => ipcRenderer.on('project:validationErrors', state),
+  load: (listener) => { onIpc('project:load', listener); },
+  iteration: (listener) => { onIpc('project:iteration', listener); },
 });
 
 contextBridge.exposeInMainWorld('import', {
   sendImports: (data) => ipcRenderer.send('import:sendImports', data),
-
 });
 
 contextBridge.exposeInMainWorld('utility', {
   openURL: (url, userStatus) => ipcRenderer.send('utility:openURL', url, userStatus),
-
 });
 
 
@@ -51,15 +53,14 @@ contextBridge.exposeInMainWorld(
     send: (channel, func) => {
       let validChannels = ['import:submit'];
       if (validChannels.includes(channel)) {
-        // Deliberately strip event as it includes `sender` 
         ipcRenderer.send(channel, func);
       }
     },
     receive: (channel, func) => {
       let validChannels = ['import:load'];
       if (validChannels.includes(channel)) {
-        // Deliberately strip event as it includes `sender` 
-        ipcRenderer.on(channel, (event, ...args) => func(...args));
+        // Strip the event object — only forward the actual payload to the renderer.
+        ipcRenderer.on(channel, (_event, ...args) => func(...args));
       }
     }
   }
@@ -73,7 +74,6 @@ contextBridge.exposeInMainWorld('render', {
   supportingAssets: () => ipcRenderer.invoke('render:supportingAssets'),
   risks: () => ipcRenderer.invoke('render:risks'),
   vulnerabilities: () => ipcRenderer.invoke('render:vulnerabilities'),
-
 });
 
 contextBridge.exposeInMainWorld('validate', {
@@ -83,7 +83,7 @@ contextBridge.exposeInMainWorld('validate', {
   supportingAssets: (data, desc) => ipcRenderer.send('validate:supportingAssets', data, desc),
   vulnerabilities: (data) => ipcRenderer.invoke('validate:vulnerabilities', data),
   risks: (data) => ipcRenderer.invoke('validate:risks', data),
-  allTabs: (filePath) => ipcRenderer.on('validate:allTabs', filePath),
+  allTabs: (listener) => { onIpc('validate:allTabs', listener); },
 });
 
 contextBridge.exposeInMainWorld('welcome', {
@@ -100,7 +100,7 @@ contextBridge.exposeInMainWorld('projectContext', {
   urlPrompt: (currentURL) => ipcRenderer.invoke('projectContext:urlPrompt', currentURL),
   attachment: () => ipcRenderer.send('projectContext:attachment'),
   decodeAttachment: (fileName) => ipcRenderer.invoke('projectContext:decodeAttachment', fileName),
-  fileName: (fileName) => ipcRenderer.on('projectContext:fileName', fileName),
+  fileName: (listener) => { onIpc('projectContext:fileName', listener); },
 });
 
 contextBridge.exposeInMainWorld('businessAssets', {
@@ -116,13 +116,12 @@ contextBridge.exposeInMainWorld('supportingAssets', {
   addBusinessAssetRef: (id, value) => ipcRenderer.send('supportingAssets:addBusinessAssetRef', id, value),
   deleteBusinessAssetRef: (id, indexes) => ipcRenderer.send('supportingAssets:deleteBusinessAssetRef', id, indexes),
   updateBusinessAssetRef: (id, value, index) => ipcRenderer.invoke('supportingAssets:updateBusinessAssetRef', id, value, index),
-  // getBusinessAssets: (label, value) => ipcRenderer.on('supportingAssets:getBusinessAssets', label, value),
 });
 
 contextBridge.exposeInMainWorld('risks', {
   addRisk: () => ipcRenderer.invoke('risks:addRisk'),
   deleteRisk: (ids) => ipcRenderer.send('risks:deleteRisk', ids),
-  load: (data) => ipcRenderer.on('risks:load', data),
+  load: (listener) => { onIpc('risks:load', listener); },
   updateRiskName: (id, field, value) => ipcRenderer.invoke('risks:updateRiskName', id, field, value),
   updateRiskLikelihood: (id, field, value) => ipcRenderer.invoke('risks:updateRiskLikelihood', id, field, value),
   updateRiskImpact: (id, field, value) => ipcRenderer.invoke('risks:updateRiskImpact', id, field, value),
@@ -148,7 +147,7 @@ contextBridge.exposeInMainWorld('vulnerabilities', {
   openURL: (url, userStatus) => ipcRenderer.send('vulnerabilities:openURL', url, userStatus),
   attachment: (id) => ipcRenderer.send('vulnerabilities:attachment', id),
   decodeAttachment: (id, fileName) => ipcRenderer.invoke('vulnerabilities:decodeAttachment', id, fileName),
-  fileName: (result) => ipcRenderer.on('vulnerabilities:fileName', result),
+  fileName: (listener) => { onIpc('vulnerabilities:fileName', listener); },
   isVulnerabilityExist: (id) => ipcRenderer.invoke('vulnerabilities:isVulnerabilityExist', id)
 });
 

@@ -325,7 +325,7 @@ const DEFAULT_TEXT_COLOR = TEXT_COLOR.DEFAULT;
     };
 
     $(document).ready(async function () {
-      window.project.load(async (event, data) => {
+      window.project.load(async (data) => {
         await tinymce.init({
           selector: '.rich-text',
           promotion: false,

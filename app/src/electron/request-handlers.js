@@ -786,7 +786,7 @@ function getXML(filePath) {
       const importedISRA = validateJsonSchema(israJSONData);
       return importedISRA
 
-  } catch {
+  } catch (error) {
     console.log(error);
     const errorMessage = getError(error)
     dialog.showMessageBoxSync(getMainWindow(), { type: 'error', title: 'Invalid File Opened', message: `Invalid XML File \n\n${errorMessage}` });
@@ -847,7 +847,8 @@ const loadData = async (win) => {
         show: false,
         webPreferences: {
           preload: path.join(__dirname, './preload.js'),
-          
+          contextIsolation: true,
+          nodeIntegration: false,
         },
       });
       dialogWindow.loadFile(path.join(__dirname,'../tabs/Import/import_dialog.html'));
@@ -936,6 +937,8 @@ const downloadReport = async (app) => {
         show: false,
         webPreferences: {
           preload: path.join(__dirname, './preload.js'),
+          contextIsolation: true,
+          nodeIntegration: false,
         },
       });
       win.loadFile(path.join(__dirname, '../tabs/Report/report.html'));

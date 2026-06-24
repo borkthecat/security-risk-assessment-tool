@@ -75,7 +75,7 @@
 
     $('#project-description__attachment').on('click', () => {
       window.projectContext.attachment();
-      window.projectContext.fileName(async (event, fileName) => {
+      window.projectContext.fileName(async (fileName) => {
         $('#project-description__file--insert').text(fileName);
       });
     });
@@ -107,7 +107,7 @@
     };
 
     $(document).ready(function () {
-      window.project.load(async (event, data) => {
+      window.project.load(async (data) => {
         await tinymce.init({
           tooltip: 'Add your formatted picures!!',
           selector: '.rich-text',

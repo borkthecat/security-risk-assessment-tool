@@ -47,6 +47,8 @@ function createWindow() {
     icon: path.join(__dirname, '../asset/isra-app-icon-512.png'),
     webPreferences: {
       preload: path.join(__dirname, './preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
     },
   });
 
@@ -126,12 +128,9 @@ function createWindow() {
 let filePath = '';
 
 
-app.on('open-file', function(event, path) {
+app.on('open-file', function(event, openedPath) {
   event.preventDefault();
-  filePath = path;
-
-  
-  
+  filePath = openedPath;
 })
 
 if (process.argv.length >= 2) { 
