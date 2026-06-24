@@ -84,6 +84,7 @@ contextBridge.exposeInMainWorld('validate', {
   vulnerabilities: (data) => ipcRenderer.invoke('validate:vulnerabilities', data),
   risks: (data) => ipcRenderer.invoke('validate:risks', data),
   allTabs: (listener) => { onIpc('validate:allTabs', listener); },
+  sendAllTabs: (labelSelected) => ipcRenderer.send('validate:allTabs', labelSelected),
 });
 
 contextBridge.exposeInMainWorld('welcome', {
