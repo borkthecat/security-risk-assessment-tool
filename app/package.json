@@ -94,6 +94,7 @@
         "electron-builder": "^26.15.3"
     },
     "overrides": {
+        "@electron/get": "^2.0.3",
         "got": "^11.8.5",
         "tinymce": "^6.8.6",
         "form-data": "^4.0.5",
