@@ -35,8 +35,8 @@ const onIpc = (channel, listener) => {
 };
 
 contextBridge.exposeInMainWorld('project', {
-  load: (listener) => { onIpc('project:load', listener); },
-  iteration: (listener) => { onIpc('project:iteration', listener); },
+  load: (data) => { onIpc('project:load', data); },
+  iteration: (iteration) => { onIpc('project:iteration', iteration); },
 });
 
 contextBridge.exposeInMainWorld('import', {
@@ -83,7 +83,7 @@ contextBridge.exposeInMainWorld('validate', {
   supportingAssets: (data, desc) => ipcRenderer.send('validate:supportingAssets', data, desc),
   vulnerabilities: (data) => ipcRenderer.invoke('validate:vulnerabilities', data),
   risks: (data) => ipcRenderer.invoke('validate:risks', data),
-  allTabs: (listener) => { onIpc('validate:allTabs', listener); },
+  allTabs: (filePath) => { onIpc('validate:allTabs', filePath); },
   sendAllTabs: (labelSelected) => ipcRenderer.send('validate:allTabs', labelSelected),
 });
 
@@ -101,7 +101,7 @@ contextBridge.exposeInMainWorld('projectContext', {
   urlPrompt: (currentURL) => ipcRenderer.invoke('projectContext:urlPrompt', currentURL),
   attachment: () => ipcRenderer.send('projectContext:attachment'),
   decodeAttachment: (fileName) => ipcRenderer.invoke('projectContext:decodeAttachment', fileName),
-  fileName: (listener) => { onIpc('projectContext:fileName', listener); },
+  fileName: (fileName) => { onIpc('projectContext:fileName', fileName); },
 });
 
 contextBridge.exposeInMainWorld('businessAssets', {
@@ -122,7 +122,7 @@ contextBridge.exposeInMainWorld('supportingAssets', {
 contextBridge.exposeInMainWorld('risks', {
   addRisk: () => ipcRenderer.invoke('risks:addRisk'),
   deleteRisk: (ids) => ipcRenderer.send('risks:deleteRisk', ids),
-  load: (listener) => { onIpc('risks:load', listener); },
+  load: (data) => { onIpc('risks:load', data); },
   updateRiskName: (id, field, value) => ipcRenderer.invoke('risks:updateRiskName', id, field, value),
   updateRiskLikelihood: (id, field, value) => ipcRenderer.invoke('risks:updateRiskLikelihood', id, field, value),
   updateRiskImpact: (id, field, value) => ipcRenderer.invoke('risks:updateRiskImpact', id, field, value),
@@ -148,7 +148,7 @@ contextBridge.exposeInMainWorld('vulnerabilities', {
   openURL: (url, userStatus) => ipcRenderer.send('vulnerabilities:openURL', url, userStatus),
   attachment: (id) => ipcRenderer.send('vulnerabilities:attachment', id),
   decodeAttachment: (id, fileName) => ipcRenderer.invoke('vulnerabilities:decodeAttachment', id, fileName),
-  fileName: (listener) => { onIpc('vulnerabilities:fileName', listener); },
+  fileName: (result) => { onIpc('vulnerabilities:fileName', result); },
   isVulnerabilityExist: (id) => ipcRenderer.invoke('vulnerabilities:isVulnerabilityExist', id)
 });
 
