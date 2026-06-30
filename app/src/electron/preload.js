@@ -59,8 +59,8 @@ contextBridge.exposeInMainWorld(
     receive: (channel, func) => {
       let validChannels = ['import:load'];
       if (validChannels.includes(channel)) {
-        // Strip the event object — only forward the actual payload to the renderer.
-        ipcRenderer.on(channel, (_event, ...args) => func(...args));
+        // Deliberately strip event as it includes `sender`
+        ipcRenderer.on(channel, (event, ...args) => func(...args));
       }
     }
   }
